@@ -1,0 +1,72 @@
+-- [[ ANTI-AFK (Awtomatikong Gumagana agad, Walang Button) ]]
+local VirtualUser = game:GetService("VirtualUser")
+game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    VirtualUser:CaptureController()
+    VirtualUser:ClickButton2(Vector2.new(0,0))
+end)
+
+-- [[ UI LIBRARY LOAD ]]
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "💪 Auto Farm & Rebirth Hub",
+   LoadingTitle = "Loading System...",
+   LoadingSubtitle = "by Gemini",
+   ConfigurationSaving = {
+      Enabled = false
+   },
+   KeySystem = false
+})
+
+-- [[ VARIABLES FOR TOGGLES ]]
+local _G = getgenv and getgenv() or _G
+_G.AutoLift = false
+_G.AutoRebirth = false
+
+-- [[ TABS ]]
+local MainTab = Window:CreateTab("Main Features", 4483362458) -- Code icon
+
+-- [[ AUTO LIFT BUTTON/TOGGLE ]]
+MainTab:CreateToggle({
+   Name = "⚡ Fast Auto Lift",
+   CurrentValue = false,
+   Flag = "AutoLiftFlag",
+   Callback = function(Value)
+      _G.AutoLift = Value
+      if Value then
+         task.spawn(function()
+            while _G.AutoLift do
+               -- FireServer para sa pagpapalakas (Strength, 1)
+               game:GetService("ReplicatedStorage").EffectsGUi:FireServer("Strength", 1)
+               task.wait(0.01) -- Sobrang bilis na click speed (huwag gawing 0 para iwas crash)
+            end
+         end)
+      end
+   end,
+})
+
+-- [[ AUTO REBIRTH BUTTON/TOGGLE ]]
+MainTab:CreateToggle({
+   Name = "🔄 Fast Auto Rebirth",
+   CurrentValue = false,
+   Flag = "AutoRebirthFlag",
+   Callback = function(Value)
+      _G.AutoRebirth = Value
+      if Value then
+         task.spawn(function()
+            while _G.AutoRebirth do
+               -- FireServer para sa Rebirth batay sa nakuha mong remote
+               game:GetService("ReplicatedStorage").serverMessage:FireServer("Congratulations! You have rebirthed!", "#fcff35", "Rebirth Message")
+               task.wait(0.1) -- Mabilis na rebirthing loop
+            end
+         end)
+      end
+   end,
+})
+
+Rayfield:Notify({
+   Title = "System Ready!",
+   Content = "Anti-AFK is active. Enjoy farming!",
+   Duration = 5,
+   Image = 4483362458,
+})
