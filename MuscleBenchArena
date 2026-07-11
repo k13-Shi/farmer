@@ -1,39 +1,140 @@
--- [[ ANTI-AFK (Awtomatikong Gumagana) ]]
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
-game:GetService("Players").LocalPlayer.Idled:Connect(function()
-    VirtualUser:CaptureController()
-    VirtualUser:ClickButton2(Vector2.new(0,0))
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+local rebirthRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("rebirthRequest")
+local muscleRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("MuscleEvent")
+
+local autoFarm = false
+local autoRebirth = false
+
+LocalPlayer.Idled:Connect(function()
+	VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+	task.wait(1)
+	VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 end)
 
--- [[ UI LIBRARY ]]
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-local Window = Rayfield:CreateWindow({
-   Name = "💪 Muscle Bench Arena Test",
-   LoadingTitle = "Loading Systems...",
-   LoadingSubtitle = "by Gemini",
-   ConfigurationSaving = { Enabled = false },
-   KeySystem = false
-})
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local FarmToggle = Instance.new("TextButton")
+local RebirthToggle = Instance.new("TextButton")
+local ToggleButton = Instance.new("TextButton")
+local UICorner_Main = Instance.new("UICorner")
+local UICorner_Farm = Instance.new("UICorner")
+local UICorner_Rebirth = Instance.new("UICorner")
+local UICorner_Toggle = Instance.new("UICorner")
 
-local _G = getgenv and getgenv() or _G
-_G.AutoLift = false
+ScreenGui.Name = "FarmGui"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
 
-local MainTab = Window:CreateTab("Main Features", 4483362458)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -75)
+MainFrame.Size = UDim2.new(0, 200, 0, 160)
+MainFrame.Visible = true
 
-MainTab:CreateToggle({
-   Name = "⚡ Test Auto Lift",
-   CurrentValue = false,
-   Flag = "AutoLiftFlag",
-   Callback = function(Value)
-      _G.AutoLift = Value
-      if Value then
-         task.spawn(function()
-            while _G.AutoLift do
-               -- Sinubukan nating tanggalin ang mahabang numero baka string lang ang chine-check
-               game:GetService("ReplicatedStorage").EffectsGUi:FireServer("Strength", 1)
-               task.wait(0.01)
-            end
-         end)
-      end
-   end,
-})
+UICorner_Main.CornerRadius = UDim.new(0, 10)
+UICorner_Main.Parent = MainFrame
+
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "AUTO FARM"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 18
+
+FarmToggle.Name = "FarmToggle"
+FarmToggle.Parent = MainFrame
+FarmToggle.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+FarmToggle.Position = UDim2.new(0.05, 0, 0.3, 0)
+FarmToggle.Size = UDim2.new(0.9, 0, 0, 35)
+FarmToggle.Font = Enum.Font.SourceSansBold
+FarmToggle.Text = "Auto Farm: OFF"
+FarmToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+FarmToggle.TextSize = 16
+
+UICorner_Farm.CornerRadius = UDim.new(0, 6)
+UICorner_Farm.Parent = FarmToggle
+
+RebirthToggle.Name = "RebirthToggle"
+RebirthToggle.Parent = MainFrame
+RebirthToggle.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+RebirthToggle.Position = UDim2.new(0.05, 0, 0.6, 0)
+RebirthToggle.Size = UDim2.new(0.9, 0, 0, 35)
+RebirthToggle.Font = Enum.Font.SourceSansBold
+RebirthToggle.Text = "Auto Rebirth: OFF"
+RebirthToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+RebirthToggle.TextSize = 16
+
+UICorner_Rebirth.CornerRadius = UDim.new(0, 6)
+UICorner_Rebirth.Parent = RebirthToggle
+
+ToggleButton.Name = "ToggleButton"
+ToggleButton.Parent = ScreenGui
+ToggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ToggleButton.Position = UDim2.new(0.02, 0, 0.2, 0)
+ToggleButton.Size = UDim2.new(0, 80, 0, 35)
+ToggleButton.Font = Enum.Font.SourceSansBold
+ToggleButton.Text = "Close"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 14
+
+UICorner_Toggle.CornerRadius = UDim.new(0, 6)
+UICorner_Toggle.Parent = ToggleButton
+
+ToggleButton.MouseButton1Click:Connect(function()
+	if MainFrame.Visible then
+		MainFrame.Visible = false
+		ToggleButton.Text = "Open"
+	else
+		MainFrame.Visible = true
+		ToggleButton.Text = "Close"
+	end
+end)
+
+FarmToggle.MouseButton1Click:Connect(function()
+	autoFarm = not autoFarm
+	if autoFarm then
+		FarmToggle.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+		FarmToggle.Text = "Auto Farm: ON"
+	else
+		FarmToggle.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+		FarmToggle.Text = "Auto Farm: OFF"
+	end
+end)
+
+RebirthToggle.MouseButton1Click:Connect(function()
+	autoRebirth = not autoRebirth
+	if autoRebirth then
+		RebirthToggle.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+		RebirthToggle.Text = "Auto Rebirth: ON"
+	else
+		RebirthToggle.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+		RebirthToggle.Text = "Auto Rebirth: OFF"
+	end
+end)
+
+task.spawn(function()
+	while true do
+		if autoFarm then
+			muscleRemote:FireServer("tool")
+		end
+		task.wait(0.1)
+	end
+end)
+
+task.spawn(function()
+	while true do
+		if autoRebirth then
+			rebirthRemote:FireServer()
+		end
+		task.wait(0.5)
+	end
+end)
