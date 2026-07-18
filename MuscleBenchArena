@@ -6,9 +6,38 @@ local LocalPlayer = Players.LocalPlayer
 
 local rebirthRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("rebirthRequest")
 local muscleRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("MuscleEvent")
+local petRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("dumbbellTake")
+local claimRewardRemote = ReplicatedStorage:WaitForChild("claimReward")
+local chocolateRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("proteinerequest")
 
 local autoFarm = false
 local autoRebirth = false
+local autoEquipPets = false
+local autoDeadLift = false
+local autoSquat = false
+
+local function teleportToBoss()
+	local map = workspace:FindFirstChild("Map") or workspace
+	local bossBoosts = map:FindFirstChild("Boss Boosts") or map:FindFirstChild("BossBoosts")
+	
+	if bossBoosts then
+		local rootPart = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+		if rootPart then
+			if bossBoosts:IsA("BasePart") then
+				rootPart.CFrame = bossBoosts.CFrame + Vector3.new(0, 3, 0)
+			elseif bossBoosts:IsA("Model") then
+				if bossBoosts.PrimaryPart then
+					rootPart.CFrame = bossBoosts.PrimaryPart.CFrame + Vector3.new(0, 3, 0)
+				else
+					local anyPart = bossBoosts:FindFirstChildWhichIsA("BasePart")
+					if anyPart then
+						rootPart.CFrame = anyPart.CFrame + Vector3.new(0, 3, 0)
+					end
+				end
+			end
+		end
+	end
+end
 
 LocalPlayer.Idled:Connect(function()
 	VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
@@ -16,108 +45,198 @@ LocalPlayer.Idled:Connect(function()
 	VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 end)
 
+task.spawn(function()
+	repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	task.wait(1)
+	teleportToBoss()
+end)
+
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
 local FarmToggle = Instance.new("TextButton")
+local DeadLiftToggle = Instance.new("TextButton")
+local SquatToggle = Instance.new("TextButton")
 local RebirthToggle = Instance.new("TextButton")
+local PetToggle = Instance.new("TextButton")
 local ToggleButton = Instance.new("TextButton")
-local UICorner_Main = Instance.new("UICorner")
-local UICorner_Farm = Instance.new("UICorner")
-local UICorner_Rebirth = Instance.new("UICorner")
-local UICorner_Toggle = Instance.new("UICorner")
+local UIStroke_Main = Instance.new("UIStroke")
 
-ScreenGui.Name = "FarmGui"
+ScreenGui.Name = "EleriumGui"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-MainFrame.Position = UDim2.new(0.5, -100, 0.5, -75)
-MainFrame.Size = UDim2.new(0, 200, 0, 160)
-MainFrame.Visible = true
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.BackgroundTransparency = 0.4
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -145)
+MainFrame.Size = UDim2.new(0, 220, 0, 290)
+MainFrame.BorderSizePixel = 0
 
-UICorner_Main.CornerRadius = UDim.new(0, 10)
-UICorner_Main.Parent = MainFrame
+UIStroke_Main.Color = Color3.fromRGB(140, 0, 255)
+UIStroke_Main.Thickness = 1
+UIStroke_Main.Parent = MainFrame
 
 Title.Name = "Title"
 Title.Parent = MainFrame
 Title.BackgroundTransparency = 1
 Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Font = Enum.Font.SourceSansBold
-Title.Text = "AUTO FARM"
+Title.Font = Enum.Font.Code
+Title.Text = "ELERIUM v3"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 18
+Title.TextSize = 16
 
 FarmToggle.Name = "FarmToggle"
 FarmToggle.Parent = MainFrame
-FarmToggle.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-FarmToggle.Position = UDim2.new(0.05, 0, 0.3, 0)
-FarmToggle.Size = UDim2.new(0.9, 0, 0, 35)
-FarmToggle.Font = Enum.Font.SourceSansBold
-FarmToggle.Text = "Auto Farm: OFF"
-FarmToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-FarmToggle.TextSize = 16
+FarmToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+FarmToggle.BackgroundTransparency = 0.3
+FarmToggle.BorderSizePixel = 1
+FarmToggle.BorderColor3 = Color3.fromRGB(140, 0, 255)
+FarmToggle.Position = UDim2.new(0.05, 0, 0.15, 0)
+FarmToggle.Size = UDim2.new(0.9, 0, 0, 32)
+FarmToggle.Font = Enum.Font.Code
+FarmToggle.Text = "Auto Dumbbell: OFF"
+FarmToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+FarmToggle.TextSize = 14
 
-UICorner_Farm.CornerRadius = UDim.new(0, 6)
-UICorner_Farm.Parent = FarmToggle
+DeadLiftToggle.Name = "DeadLiftToggle"
+DeadLiftToggle.Parent = MainFrame
+DeadLiftToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+DeadLiftToggle.BackgroundTransparency = 0.3
+DeadLiftToggle.BorderSizePixel = 1
+DeadLiftToggle.BorderColor3 = Color3.fromRGB(140, 0, 255)
+DeadLiftToggle.Position = UDim2.new(0.05, 0, 0.31, 0)
+DeadLiftToggle.Size = UDim2.new(0.9, 0, 0, 32)
+DeadLiftToggle.Font = Enum.Font.Code
+DeadLiftToggle.Text = "Dead Lift: OFF"
+DeadLiftToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+DeadLiftToggle.TextSize = 14
+
+SquatToggle.Name = "SquatToggle"
+SquatToggle.Parent = MainFrame
+SquatToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+SquatToggle.BackgroundTransparency = 0.3
+SquatToggle.BorderSizePixel = 1
+SquatToggle.BorderColor3 = Color3.fromRGB(140, 0, 255)
+SquatToggle.Position = UDim2.new(0.05, 0, 0.47, 0)
+SquatToggle.Size = UDim2.new(0.9, 0, 0, 32)
+SquatToggle.Font = Enum.Font.Code
+SquatToggle.Text = "Squat Magma: OFF"
+SquatToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+SquatToggle.TextSize = 14
 
 RebirthToggle.Name = "RebirthToggle"
 RebirthToggle.Parent = MainFrame
-RebirthToggle.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-RebirthToggle.Position = UDim2.new(0.05, 0, 0.6, 0)
-RebirthToggle.Size = UDim2.new(0.9, 0, 0, 35)
-RebirthToggle.Font = Enum.Font.SourceSansBold
+RebirthToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+RebirthToggle.BackgroundTransparency = 0.3
+RebirthToggle.BorderSizePixel = 1
+RebirthToggle.BorderColor3 = Color3.fromRGB(140, 0, 255)
+RebirthToggle.Position = UDim2.new(0.05, 0, 0.63, 0)
+RebirthToggle.Size = UDim2.new(0.9, 0, 0, 32)
+RebirthToggle.Font = Enum.Font.Code
 RebirthToggle.Text = "Auto Rebirth: OFF"
-RebirthToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-RebirthToggle.TextSize = 16
+RebirthToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+RebirthToggle.TextSize = 14
 
-UICorner_Rebirth.CornerRadius = UDim.new(0, 6)
-UICorner_Rebirth.Parent = RebirthToggle
+PetToggle.Name = "PetToggle"
+PetToggle.Parent = MainFrame
+PetToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+PetToggle.BackgroundTransparency = 0.3
+PetToggle.BorderSizePixel = 1
+PetToggle.BorderColor3 = Color3.fromRGB(140, 0, 255)
+PetToggle.Position = UDim2.new(0.05, 0, 0.79, 0)
+PetToggle.Size = UDim2.new(0.9, 0, 0, 32)
+PetToggle.Font = Enum.Font.Code
+PetToggle.Text = "Divine Horse: OFF"
+PetToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+PetToggle.TextSize = 14
 
 ToggleButton.Name = "ToggleButton"
 ToggleButton.Parent = ScreenGui
-ToggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ToggleButton.BackgroundTransparency = 0.5
+ToggleButton.BorderSizePixel = 1
+ToggleButton.BorderColor3 = Color3.fromRGB(140, 0, 255)
 ToggleButton.Position = UDim2.new(0.02, 0, 0.2, 0)
-ToggleButton.Size = UDim2.new(0, 80, 0, 35)
-ToggleButton.Font = Enum.Font.SourceSansBold
-ToggleButton.Text = "Close"
+ToggleButton.Size = UDim2.new(0, 80, 0, 30)
+ToggleButton.Font = Enum.Font.Code
+ToggleButton.Text = "[-]"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.TextSize = 14
-
-UICorner_Toggle.CornerRadius = UDim.new(0, 6)
-UICorner_Toggle.Parent = ToggleButton
 
 ToggleButton.MouseButton1Click:Connect(function()
 	if MainFrame.Visible then
 		MainFrame.Visible = false
-		ToggleButton.Text = "Open"
+		ToggleButton.Text = "[+]"
 	else
 		MainFrame.Visible = true
-		ToggleButton.Text = "Close"
+		ToggleButton.Text = "[-]"
 	end
 end)
 
 FarmToggle.MouseButton1Click:Connect(function()
 	autoFarm = not autoFarm
 	if autoFarm then
-		FarmToggle.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
-		FarmToggle.Text = "Auto Farm: ON"
+		FarmToggle.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
+		FarmToggle.Text = "Auto Dumbbell: ON"
+		FarmToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 	else
-		FarmToggle.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-		FarmToggle.Text = "Auto Farm: OFF"
+		FarmToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+		FarmToggle.Text = "Auto Dumbbell: OFF"
+		FarmToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+	end
+end)
+
+DeadLiftToggle.MouseButton1Click:Connect(function()
+	autoDeadLift = not autoDeadLift
+	if autoDeadLift then
+		DeadLiftToggle.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
+		DeadLiftToggle.Text = "Dead Lift: ON"
+		DeadLiftToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	else
+		DeadLiftToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+		DeadLiftToggle.Text = "Dead Lift: OFF"
+		DeadLiftToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+	end
+end)
+
+SquatToggle.MouseButton1Click:Connect(function()
+	autoSquat = not autoSquat
+	if autoSquat then
+		SquatToggle.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
+		SquatToggle.Text = "Squat Magma: ON"
+		SquatToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	else
+		SquatToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+		SquatToggle.Text = "Squat Magma: OFF"
+		SquatToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
 	end
 end)
 
 RebirthToggle.MouseButton1Click:Connect(function()
 	autoRebirth = not autoRebirth
 	if autoRebirth then
-		RebirthToggle.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+		RebirthToggle.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
 		RebirthToggle.Text = "Auto Rebirth: ON"
+		RebirthToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
 	else
-		RebirthToggle.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
+		RebirthToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
 		RebirthToggle.Text = "Auto Rebirth: OFF"
+		RebirthToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
+	end
+end)
+
+PetToggle.MouseButton1Click:Connect(function()
+	autoEquipPets = not autoEquipPets
+	if autoEquipPets then
+		PetToggle.BackgroundColor3 = Color3.fromRGB(140, 0, 255)
+		PetToggle.Text = "Divine Horse: ON"
+		PetToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+	else
+		PetToggle.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+		PetToggle.Text = "Divine Horse: OFF"
+		PetToggle.TextColor3 = Color3.fromRGB(200, 200, 200)
 	end
 end)
 
@@ -132,9 +251,62 @@ end)
 
 task.spawn(function()
 	while true do
+		if autoDeadLift then
+			muscleRemote:FireServer("Dead Lift Magma")
+		end
+		task.wait(0.1)
+	end
+end)
+
+task.spawn(function()
+	while true do
+		if autoSquat then
+			petRemote:FireServer("Squat Magma")
+		end
+		task.wait(0.1)
+	end
+end)
+
+task.spawn(function()
+	while true do
 		if autoRebirth then
 			rebirthRemote:FireServer()
 		end
 		task.wait(0.5)
+	end
+end)
+
+task.spawn(function()
+	while true do
+		if autoEquipPets then
+			local petsFolder = LocalPlayer:FindFirstChild("PetsFolder")
+			if petsFolder then
+				local count = 0
+				for _, pet in ipairs(petsFolder:GetChildren()) do
+					if pet.Name == "Divine Horse" then
+						petRemote:FireServer({pet})
+						count = count + 1
+						if count >= 4 then
+							break
+						end
+					end
+				end
+			end
+		end
+		task.wait(2)
+	end
+end)
+
+task.spawn(function()
+	while true do
+		claimRewardRemote:FireServer()
+		task.wait(5)
+	end
+end)
+
+task.spawn(function()
+	while true do
+		chocolateRemote:FireServer()
+		task.wait(300)
 	end
 end)
