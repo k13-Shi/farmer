@@ -17,10 +17,17 @@ local autoEquipPets = false
 local autoDeadLift = false
 local autoSquat = false
 
+local dumbbellVariations = {"Dumbbell Magma", "Magma Dumbbell", "dumbbell magma", "magma dumbbell", "Magma", "magma", "tool"}
+local deadliftVariations = {"Dead Lift Magma", "Deadlift Magma", "Magma Deadlift", "Magma Dead Lift", "magma deadlift", "Dead Lift", "Deadlift"}
+local squatVariations = {"Squat Magma", "Magma Squat", "magma squat", "Squat", "squat"}
+
 LocalPlayer.Idled:Connect(function()
-	VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-	task.wait(1)
-	VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+	local camera = workspace.CurrentCamera
+	if camera then
+		VirtualUser:Button2Down(Vector2.new(0, 0), camera.CFrame)
+		task.wait(1)
+		VirtualUser:Button2Up(Vector2.new(0, 0), camera.CFrame)
+	end
 end)
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -215,7 +222,9 @@ end)
 task.spawn(function()
 	while true do
 		if autoFarm and muscleRemote then
-			muscleRemote:FireServer("Dumbbell Magma")
+			for _, name in ipairs(dumbbellVariations) do
+				muscleRemote:FireServer(name)
+			end
 		end
 		task.wait(0.1)
 	end
@@ -224,7 +233,9 @@ end)
 task.spawn(function()
 	while true do
 		if autoDeadLift and muscleRemote then
-			muscleRemote:FireServer("Dead Lift Magma")
+			for _, name in ipairs(deadliftVariations) do
+				muscleRemote:FireServer(name)
+			end
 		end
 		task.wait(0.1)
 	end
@@ -233,7 +244,9 @@ end)
 task.spawn(function()
 	while true do
 		if autoSquat and muscleRemote then
-			muscleRemote:FireServer("Squat Magma")
+			for _, name in ipairs(squatVariations) do
+				muscleRemote:FireServer(name)
+			end
 		end
 		task.wait(0.1)
 	end
@@ -251,12 +264,13 @@ end)
 task.spawn(function()
 	while true do
 		if autoEquipPets and petRemote then
-			local petsFolder = LocalPlayer:FindFirstChild("PetsFolder")
+			local petsFolder = LocalPlayer:FindFirstChild("PetsFolder") or LocalPlayer:FindFirstChild("Pets") or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Pets"))
 			if petsFolder then
 				local count = 0
 				for _, pet in ipairs(petsFolder:GetChildren()) do
 					if pet.Name == "Divine Horse" then
 						petRemote:FireServer("equipPet", pet)
+						petRemote:FireServer(pet)
 						count = count + 1
 						if count >= 4 then
 							break
@@ -271,14 +285,14 @@ end)
 
 task.spawn(function()
 	while true do
-		if claimRewardRemote then
+		if autoEquipPets and claimRewardRemote then
 			claimRewardRemote:FireServer()
 		end
 		task.wait(5)
 	end
 end)
 
-task.spawn(function)
+task.spawn(function()
 	while true do
 		if chocolateRemote then
 			chocolateRemote:FireServer()
