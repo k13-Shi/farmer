@@ -4,11 +4,12 @@ local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
 
-local rebirthRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("rebirthRequest")
-local muscleRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("MuscleEvent")
-local petRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("dumbbellTake")
-local claimRewardRemote = ReplicatedStorage:WaitForChild("claimReward")
-local chocolateRemote = ReplicatedStorage:WaitForChild("remotes"):WaitForChild("proteinerequest")
+local remotes = ReplicatedStorage:WaitForChild("remotes", 5)
+local rebirthRemote = remotes and remotes:WaitForChild("rebirthRequest", 2)
+local muscleRemote = remotes and remotes:WaitForChild("MuscleEvent", 2)
+local petRemote = remotes and remotes:WaitForChild("dumbbellTake", 2)
+local claimRewardRemote = ReplicatedStorage:WaitForChild("claimReward", 5)
+local chocolateRemote = remotes and remotes:WaitForChild("proteinerequest", 2)
 
 local autoFarm = false
 local autoRebirth = false
@@ -16,39 +17,10 @@ local autoEquipPets = false
 local autoDeadLift = false
 local autoSquat = false
 
-local function teleportToBoss()
-	local map = workspace:FindFirstChild("Map") or workspace
-	local bossBoosts = map:FindFirstChild("Boss Boosts") or map:FindFirstChild("BossBoosts")
-	
-	if bossBoosts then
-		local rootPart = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-		if rootPart then
-			if bossBoosts:IsA("BasePart") then
-				rootPart.CFrame = bossBoosts.CFrame + Vector3.new(0, 3, 0)
-			elseif bossBoosts:IsA("Model") then
-				if bossBoosts.PrimaryPart then
-					rootPart.CFrame = bossBoosts.PrimaryPart.CFrame + Vector3.new(0, 3, 0)
-				else
-					local anyPart = bossBoosts:FindFirstChildWhichIsA("BasePart")
-					if anyPart then
-						rootPart.CFrame = anyPart.CFrame + Vector3.new(0, 3, 0)
-					end
-				end
-			end
-		end
-	end
-end
-
 LocalPlayer.Idled:Connect(function()
 	VirtualUser:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
 	task.wait(1)
 	VirtualUser:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
-end)
-
-task.spawn(function()
-	repeat task.wait() until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-	task.wait(1)
-	teleportToBoss()
 end)
 
 local ScreenGui = Instance.new("ScreenGui")
@@ -242,8 +214,8 @@ end)
 
 task.spawn(function()
 	while true do
-		if autoFarm then
-			muscleRemote:FireServer("tool")
+		if autoFarm and muscleRemote then
+			muscleRemote:FireServer("Dumbbell Magma")
 		end
 		task.wait(0.1)
 	end
@@ -251,7 +223,7 @@ end)
 
 task.spawn(function()
 	while true do
-		if autoDeadLift then
+		if autoDeadLift and muscleRemote then
 			muscleRemote:FireServer("Dead Lift Magma")
 		end
 		task.wait(0.1)
@@ -260,8 +232,8 @@ end)
 
 task.spawn(function()
 	while true do
-		if autoSquat then
-			petRemote:FireServer("Squat Magma")
+		if autoSquat and muscleRemote then
+			muscleRemote:FireServer("Squat Magma")
 		end
 		task.wait(0.1)
 	end
@@ -269,7 +241,7 @@ end)
 
 task.spawn(function()
 	while true do
-		if autoRebirth then
+		if autoRebirth and rebirthRemote then
 			rebirthRemote:FireServer()
 		end
 		task.wait(0.5)
@@ -278,13 +250,13 @@ end)
 
 task.spawn(function()
 	while true do
-		if autoEquipPets then
+		if autoEquipPets and petRemote then
 			local petsFolder = LocalPlayer:FindFirstChild("PetsFolder")
 			if petsFolder then
 				local count = 0
 				for _, pet in ipairs(petsFolder:GetChildren()) do
 					if pet.Name == "Divine Horse" then
-						petRemote:FireServer({pet})
+						petRemote:FireServer("equipPet", pet)
 						count = count + 1
 						if count >= 4 then
 							break
@@ -293,20 +265,24 @@ task.spawn(function()
 				end
 			end
 		end
-		task.wait(2)
+		task.wait(3)
 	end
 end)
 
 task.spawn(function()
 	while true do
-		claimRewardRemote:FireServer()
+		if claimRewardRemote then
+			claimRewardRemote:FireServer()
+		end
 		task.wait(5)
 	end
 end)
 
-task.spawn(function()
+task.spawn(function)
 	while true do
-		chocolateRemote:FireServer()
+		if chocolateRemote then
+			chocolateRemote:FireServer()
+		end
 		task.wait(300)
 	end
 end)
